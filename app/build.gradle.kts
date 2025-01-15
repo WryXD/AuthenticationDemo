@@ -69,6 +69,8 @@ dependencies {
     // Viewmodel
     implementation(libs.androidx.hilt.navigation.compose)
 
+    // System Ui Controller
+    implementation(libs.accompanist.systemuicontroller)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

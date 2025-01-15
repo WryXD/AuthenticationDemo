@@ -29,6 +29,7 @@ fun Password(
     leadingIcon: (() -> Int)? = null,
     trailingIcon1: (() -> Int)? = null,
     trailingIcon2: (() -> Int)? = null,
+    text: () -> String
 ) {
     OutlinedTextField(
         value = value(),
@@ -36,8 +37,7 @@ fun Password(
         modifier = modifier,
         singleLine = true,
         label = {
-            val text by remember { mutableStateOf("Password") }
-            Text(text = text,
+            Text(text = text(),
                 color = Color.Black)
         },
         keyboardOptions = KeyboardOptions(
