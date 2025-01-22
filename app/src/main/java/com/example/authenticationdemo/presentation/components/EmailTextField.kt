@@ -21,13 +21,22 @@ fun Email(
     value: () -> String,
     onValueChange: (String) -> Unit,
     onNext: () -> Unit,
+    onError: () -> Boolean,
+    onErrorMessage: () -> String,
     leadingIcon: (() -> Int?)? = null,
 ) {
     OutlinedTextField(
         value = value(),
         onValueChange = { onValueChange(it) },
+        isError = onError(),
         modifier = modifier,
         singleLine = true,
+        supportingText = {
+            Text(
+                text = onErrorMessage(),
+                color = Color.Black
+            )
+        },
         label = {
             val text by remember { mutableStateOf("Email") }
             Text(

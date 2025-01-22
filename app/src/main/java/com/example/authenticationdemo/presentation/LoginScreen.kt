@@ -1,6 +1,5 @@
 package com.example.authenticationdemo.presentation
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,7 +13,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,15 +32,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.authenticationdemo.R
+import com.example.authenticationdemo.domain.model.AuthState
 import com.example.authenticationdemo.presentation.components.AppButton
 import com.example.authenticationdemo.presentation.components.Email
 import com.example.authenticationdemo.presentation.components.Password
 import com.example.authenticationdemo.presentation.components.SocialSignInButton
-import com.example.authenticationdemo.viewmodel.LoginViewModel
+import com.example.authenticationdemo.presentation.components.TextField
+import com.example.authenticationdemo.presentation.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
-    modifier: Modifier = Modifier,
     onSignIn: () -> Unit,
     onSignUp: () -> Unit,
     onForgotPassword: () -> Unit,
@@ -48,6 +50,7 @@ fun LoginScreen(
     onSignInWithApple: () -> Unit,
     loginViewModel: LoginViewModel = hiltViewModel(),
 ) {
+    val loginUiState by loginViewModel.loginUiState.collectAsState()
     val loginState by loginViewModel.loginState.collectAsState()
 
     val keyboard = LocalSoftwareKeyboardController.current
@@ -56,9 +59,13 @@ fun LoginScreen(
     val focusAction by remember { mutableStateOf(focusManager) }
 
 
-    var email by remember { mutableStateOf(loginState.email) }
-    var password by remember { mutableStateOf(loginState.password) }
-    var isPasswordVisible by remember { mutableStateOf(loginState.isPasswordVisible) }
+    var email by remember { mutableStateOf(loginUiState.email) }
+    var password by remember { mutableStateOf(loginUiState.password) }
+    val isPasswordVisible by remember { derivedStateOf { loginUiState.isPasswordVisible } }
+    val emailError by remember { derivedStateOf { loginUiState.emailError } }
+    val emailErrorMessage by remember { derivedStateOf { loginUiState.emailErrorMessage } }
+    val passwordError by remember { derivedStateOf { loginUiState.passwordError } }
+    val passwordErrorMessage by remember { derivedStateOf { loginUiState.passwordErrorMessage } }
 
     val onUpdateEmail: (String) -> Unit = remember {
         {
@@ -76,10 +83,15 @@ fun LoginScreen(
 
     val onVisible: () -> Unit = remember {
         {
-            isPasswordVisible = !isPasswordVisible
             loginViewModel.updatePasswordVisibility()
         }
     }
+    val state by remember { derivedStateOf { loginState } }
+    HandleLoginState(
+        loginState = { state },
+        onSignIn = onSignIn
+    )
+
     Column(
         Modifier
             .fillMaxSize()
@@ -89,8 +101,11 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Text(
-            text = "Chào mừng bạn đã trở lại", color = Color.Black, fontSize = 24.sp
+        TextField(
+            text = { "Chào mừng bạn đã trở lại" },
+            color = { Color.Black },
+            fontSize = { 24.sp },
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(Modifier.height(48.dp))
@@ -100,13 +115,16 @@ fun LoginScreen(
             .fillMaxWidth(),
             value = { email },
             onValueChange = onUpdateEmail,
+            onError = { emailError },
+            onErrorMessage = { emailErrorMessage ?: "" },
             onNext = {
                 keyboardAction?.hide()
                 focusAction.moveFocus(focusDirection = FocusDirection.Down)
             },
-            leadingIcon = { R.drawable.icon_email })
+            leadingIcon = { R.drawable.icon_email }
+        )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(8.dp))
 
         Password(modifier = Modifier
             .testTag("password_test")
@@ -114,6 +132,8 @@ fun LoginScreen(
             value = { password },
             onValueChange = onUpdatePassword,
             text = { "Password" },
+            isError = { passwordError },
+            errorMessage = { passwordErrorMessage ?: "" },
             onDone = {
                 keyboardAction?.hide()
             },
@@ -127,9 +147,10 @@ fun LoginScreen(
 
         AppButton(
             text = { "Đăng nhập" },
-            color = { Color.Blue },
+            color = { Color.White },
             fontSize = { 16.sp },
-            onClick = onSignIn,
+            containerColor = { Color.Blue},
+            onClick = loginViewModel::login,
         )
 
         Spacer(Modifier.height(24.dp))
@@ -191,20 +212,39 @@ fun LoginScreen(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Chưa có tài khoản?", fontSize = 16.sp, color = Color.Black
+
+            TextField(
+                text = { "Chưa có tài khoản?" },
+                color = { Color.Black },
+                fontSize = { 16.sp },
             )
 
-            Text(
-                text = "Đăng ký ngay",
-                color = Color.Blue,
-                fontSize = 16.sp,
-                modifier = Modifier
-                    .padding(start = 4.dp)
-                    .clickable { onSignUp() },
-                textDecoration = TextDecoration.Underline
+            TextField(
+                text = { "Đăng ký ngay" },
+                color = { Color.Blue },
+                fontSize = { 16.sp },
+                onClick = onSignUp,
+                modifier = Modifier.padding(start = 4.dp),
+                textDecoration = { TextDecoration.Underline }
             )
+
         }
 
+    }
+}
+
+@Composable
+fun HandleLoginState(
+    loginState: () -> AuthState?,
+    onSignIn: () -> Unit,
+) {
+    LaunchedEffect(loginState()) {
+        when (loginState()) {
+            is AuthState.Error -> {}
+            is AuthState.Loading -> {}
+            is AuthState.Success -> { onSignIn() }
+
+            null -> {}
+        }
     }
 }

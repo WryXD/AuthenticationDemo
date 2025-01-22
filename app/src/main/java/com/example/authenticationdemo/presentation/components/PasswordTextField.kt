@@ -24,6 +24,8 @@ fun Password(
     value: () -> String,
     onValueChange: (String) -> Unit,
     onDone: () -> Unit,
+    isError: () -> Boolean,
+    errorMessage: () -> String,
     isVisible: () -> Boolean,
     onVisible: () -> Unit,
     leadingIcon: (() -> Int)? = null,
@@ -36,9 +38,13 @@ fun Password(
         onValueChange = { onValueChange(it) },
         modifier = modifier,
         singleLine = true,
+        isError = isError(),
+        supportingText = { Text(text = errorMessage(), color = Color.Black) },
         label = {
-            Text(text = text(),
-                color = Color.Black)
+            Text(
+                text = text(),
+                color = Color.Black
+            )
         },
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Done

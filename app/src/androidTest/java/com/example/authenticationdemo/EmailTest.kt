@@ -26,6 +26,8 @@ class EmailComposableTest {
                     value = { emailState.value },
                     onValueChange = { emailState.value = it },
                     onNext = { },
+                    onError = {false},
+                    onErrorMessage = {""},
                     leadingIcon = { R.drawable.icon_email }
                 )
             }

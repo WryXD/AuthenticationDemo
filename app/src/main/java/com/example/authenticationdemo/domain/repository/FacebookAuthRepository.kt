@@ -1,0 +1,3 @@
+package com.example.authenticationdemo.domain.repository
+
+interface FacebookAuthRepository
