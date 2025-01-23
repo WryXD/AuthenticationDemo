@@ -1,6 +1,7 @@
 package com.example.authenticationdemo.presentation.viewmodel
 
 import android.util.Log
+import androidx.compose.foundation.checkScrollableContainerConstraints
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.authenticationdemo.domain.model.AuthState
@@ -9,11 +10,15 @@ import com.example.authenticationdemo.domain.model.PasswordValidationType
 import com.example.authenticationdemo.domain.use_case.LoginValidationUseCase
 import com.example.authenticationdemo.domain.use_case.UserLoginUseCase
 import com.example.authenticationdemo.state.LoginUiState
+import com.google.android.play.integrity.internal.c
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,7 +56,6 @@ class LoginViewModel @Inject constructor(
     fun updatePasswordVisibility() {
         _loginUiState.value =
             _loginUiState.value.copy(isPasswordVisible = !_loginUiState.value.isPasswordVisible)
-
     }
 
     private fun processEmailValidationType(validationType: EmailValidationType) {
@@ -98,16 +102,33 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    private fun showProgressBar() {
+        _loginUiState.update { it.copy(isShowProgressBar = true) }
+    }
+
+    private fun hideProgressBar() {
+        _loginUiState.update { it.copy(isShowProgressBar = false) }
+    }
+
     fun login() {
         viewModelScope.launch {
+            withContext(Dispatchers.Main) {
+                checkEmailValidation()
+                checkPasswordValidation()
+                showProgressBar()
+            }
             val result = userLogin(_loginUiState.value.email, _loginUiState.value.password)
             when {
                 result.isSuccess -> {
+                    hideProgressBar()
                     _loginState.value = AuthState.Success
                     Log.e("LoginViewModel", "login: Success")
                 }
+
                 result.isFailure -> {
-                    _loginState.value = AuthState.Error(result.exceptionOrNull()?.message ?: "Login failed")
+                    hideProgressBar()
+                    _loginState.value =
+                        AuthState.Error(result.exceptionOrNull()?.message ?: "Login failed")
                 }
             }
         }

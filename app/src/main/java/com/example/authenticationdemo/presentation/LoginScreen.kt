@@ -66,6 +66,7 @@ fun LoginScreen(
     val emailErrorMessage by remember { derivedStateOf { loginUiState.emailErrorMessage } }
     val passwordError by remember { derivedStateOf { loginUiState.passwordError } }
     val passwordErrorMessage by remember { derivedStateOf { loginUiState.passwordErrorMessage } }
+    val isShowProgressBar by remember { derivedStateOf { loginUiState.isShowProgressBar } }
 
     val onUpdateEmail: (String) -> Unit = remember {
         {
@@ -147,10 +148,11 @@ fun LoginScreen(
 
         AppButton(
             text = { "Đăng nhập" },
-            color = { Color.White },
+            color = { Color.Blue },
             fontSize = { 16.sp },
-            containerColor = { Color.Blue},
+            containerColor = { Color.White},
             onClick = loginViewModel::login,
+            progressBar = { isShowProgressBar }
         )
 
         Spacer(Modifier.height(24.dp))
