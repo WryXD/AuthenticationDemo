@@ -1,5 +1,6 @@
 package com.example.authenticationdemo.presentation
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -67,6 +68,7 @@ fun LoginScreen(
     val passwordError by remember { derivedStateOf { loginUiState.passwordError } }
     val passwordErrorMessage by remember { derivedStateOf { loginUiState.passwordErrorMessage } }
     val isShowProgressBar by remember { derivedStateOf { loginUiState.isShowProgressBar } }
+    val isEnableButton by remember { derivedStateOf { loginUiState.isEnableButton } }
 
     val onUpdateEmail: (String) -> Unit = remember {
         {
@@ -90,7 +92,8 @@ fun LoginScreen(
     val state by remember { derivedStateOf { loginState } }
     HandleLoginState(
         loginState = { state },
-        onSignIn = onSignIn
+        onSignIn = onSignIn,
+        loginViewModel = loginViewModel
     )
 
     Column(
@@ -152,7 +155,8 @@ fun LoginScreen(
             fontSize = { 16.sp },
             containerColor = { Color.White},
             onClick = loginViewModel::login,
-            progressBar = { isShowProgressBar }
+            progressBar = { isShowProgressBar },
+            isEnable = { isEnableButton }
         )
 
         Spacer(Modifier.height(24.dp))
@@ -239,14 +243,27 @@ fun LoginScreen(
 fun HandleLoginState(
     loginState: () -> AuthState?,
     onSignIn: () -> Unit,
+    loginViewModel: LoginViewModel,
 ) {
     LaunchedEffect(loginState()) {
         when (loginState()) {
-            is AuthState.Error -> {}
-            is AuthState.Loading -> {}
-            is AuthState.Success -> { onSignIn() }
+            is AuthState.Error -> {
+                loginViewModel.setProgressBarVisibility(false)
+                loginViewModel.setLoginButtonEnable(true)
+            }
+            is AuthState.Loading -> {
+                loginViewModel.setProgressBarVisibility(true)
+                loginViewModel.setLoginButtonEnable(false)
+            }
+            is AuthState.Success -> {
+                loginViewModel.setProgressBarVisibility(false)
+                loginViewModel.setLoginButtonEnable(true)
+                onSignIn()
+            }
 
-            null -> {}
+            null -> {
+                Log.e("Login Screen", "Login state is null!")
+            }
         }
     }
 }

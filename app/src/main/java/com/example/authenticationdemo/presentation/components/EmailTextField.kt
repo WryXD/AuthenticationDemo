@@ -68,7 +68,8 @@ fun Email(
             disabledContainerColor = Color.White,
             errorIndicatorColor = Color.Red,
             focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black
+            unfocusedTextColor = Color.Black,
+            errorContainerColor = Color.White
         )
     )
 

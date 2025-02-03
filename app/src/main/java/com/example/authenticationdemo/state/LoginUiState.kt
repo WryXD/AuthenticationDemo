@@ -9,4 +9,5 @@ data class LoginUiState(
     val emailErrorMessage: String? = null,
     val passwordErrorMessage: String? = null,
     val isShowProgressBar: Boolean = false,
+    val isEnableButton: Boolean = true,
 )

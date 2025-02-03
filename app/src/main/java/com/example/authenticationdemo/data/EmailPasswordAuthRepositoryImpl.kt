@@ -16,6 +16,8 @@ class EmailPasswordAuthRepositoryImpl @Inject constructor(
             if (user.user != null) {
                 Result.success(AuthState.Success)
             } else {
+                AuthState.Error("User not found!")
+                Log.e("EmailPasswordAuthRepositoryImpl", "User not found")
                 Result.failure(Exception("Login failed"))
             }
         } catch (e: Exception) {

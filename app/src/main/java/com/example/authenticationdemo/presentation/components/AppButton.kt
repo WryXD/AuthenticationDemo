@@ -35,7 +35,8 @@ fun AppButton(
     progressBar: () -> Boolean = { false },
     progressBarSize: () -> Dp = { 24.dp },
     progressBarColor: () -> Color = { Color.Blue },
-    progressBarTrackColor: () -> Color = { Color.White }
+    progressBarTrackColor: () -> Color = { Color.White },
+    isEnable: () -> Boolean = { true }
 ) {
     Button(
         onClick = onClick,
@@ -43,9 +44,12 @@ fun AppButton(
             .height(buttonHeight())
             .width(buttonWidth()),
         colors = ButtonDefaults.buttonColors(
-            containerColor = containerColor()
+            containerColor = containerColor(),
+            disabledContainerColor = containerColor(),
+            disabledContentColor = containerColor(),
         ),
         border = BorderStroke(borderWidth(), borderColor()),
+        enabled = isEnable()
     ) {
         Box(
             Modifier
